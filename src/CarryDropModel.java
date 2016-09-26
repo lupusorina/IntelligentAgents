@@ -2,6 +2,8 @@
 
 // package demo;
 import java.awt.Color;
+import java.util.ArrayList;
+
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.SimModelImpl;
@@ -17,15 +19,20 @@ public class CarryDropModel extends SimModelImpl {
   private static final int WORLDXSIZE = 40;
   private static final int WORLDYSIZE = 40;
   private static final int TOTALMONEY = 1000;
+  private static final int AGENT_MIN_LIFESPAN = 30;
+  private static final int AGENT_MAX_LIFESPAN = 50;
  
   private Schedule schedule;
   private CarryDropSpace cdSpace;
   private DisplaySurface displaySurf;
-
+  private ArrayList<CarryDropAgent> agentList;
+  
   private int numAgents = NUMAGENTS;
   private int worldXSize = WORLDXSIZE;
   private int worldYSize = WORLDYSIZE;
   private int money = TOTALMONEY;
+  private int agentMinLifespan = AGENT_MIN_LIFESPAN;
+  private int agentMaxLifespan = AGENT_MAX_LIFESPAN;
 
   public String getName(){
     return "Carry And Drop";
@@ -49,12 +56,16 @@ public class CarryDropModel extends SimModelImpl {
     buildDisplay();
     
     displaySurf.display();
+    
   }
 
   public void buildModel(){
 	  System.out.println("Running BuildModel");
 	  cdSpace = new CarryDropSpace(worldXSize, worldYSize);
 	  cdSpace.spreadMoney(money);
+	  for(int i = 0; i < numAgents; i++){
+	      addNewAgent();
+	    }
   }
 
   public void buildSchedule(){
@@ -122,5 +133,10 @@ public class CarryDropModel extends SimModelImpl {
 	  CarryDropModel model = new CarryDropModel();
 	  init.loadModel(model, "", false);
   }
+  
+  private void addNewAgent(){
+	    CarryDropAgent a = new CarryDropAgent(agentMinLifespan, agentMaxLifespan);
+	    agentList.add(a);
+	  }
 
 }

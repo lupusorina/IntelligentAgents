@@ -4,6 +4,7 @@
 import java.awt.Color;
 import java.util.ArrayList;
 
+import uchicago.src.sim.engine.BasicAction;
 import uchicago.src.sim.engine.Schedule;
 import uchicago.src.sim.engine.SimInit;
 import uchicago.src.sim.engine.SimModelImpl;
@@ -11,6 +12,7 @@ import uchicago.src.sim.gui.DisplaySurface;
 import uchicago.src.sim.gui.ColorMap;
 import uchicago.src.sim.gui.Object2DDisplay;
 import uchicago.src.sim.gui.Value2DDisplay;
+import uchicago.src.sim.util.SimUtilities;
 
 public class CarryDropModel extends SimModelImpl {
   // Default Values
@@ -32,7 +34,7 @@ public class CarryDropModel extends SimModelImpl {
 
   private CarryDropSpace cdSpace;
 
-  private ArrayList agentList;
+  private ArrayList<CarryDropAgent> agentList;
 
   private DisplaySurface displaySurf;
 
@@ -43,8 +45,10 @@ public class CarryDropModel extends SimModelImpl {
   public void setup(){
     System.out.println("Running setup");
     cdSpace = null;
-    agentList = new ArrayList();
-
+    agentList = new ArrayList<CarryDropAgent>();
+    schedule = new Schedule(1);
+    
+    
     if (displaySurf != null){
       displaySurf.dispose();
     }
@@ -74,11 +78,33 @@ public class CarryDropModel extends SimModelImpl {
     for(int i = 0; i < agentList.size(); i++){
       CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
       cda.report();
+      
     }
   }
 
   public void buildSchedule(){
     System.out.println("Running BuildSchedule");
+    
+    class CarryDropStep extends BasicAction {
+        public void execute() {
+          SimUtilities.shuffle(agentList);
+          for(int i =0; i < agentList.size(); i++){
+            CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
+            cda.step();
+            displaySurf.updateDisplay();
+          }
+        }
+      }
+
+      schedule.scheduleActionBeginning(0, new CarryDropStep());
+      
+     class CarryDropCountLiving extends BasicAction {
+          public void execute(){
+            countLivingAgents();
+          }
+        }
+
+        schedule.scheduleActionAtInterval(10, new CarryDropCountLiving());
   }
 
   public void buildDisplay(){
@@ -107,6 +133,19 @@ public class CarryDropModel extends SimModelImpl {
     agentList.add(a);
     cdSpace.addAgent(a);
   } 
+  
+  private int countLivingAgents(){
+	    int livingAgents = 0;
+	    for(int i = 0; i < agentList.size(); i++){
+	      CarryDropAgent cda = (CarryDropAgent)agentList.get(i);
+	      if(cda.getStepsToLive() > 0) livingAgents++;
+	    }
+	    System.out.println("Number of living agents is: " + livingAgents);
+
+	    return livingAgents;
+	  }
+  
+  
   public Schedule getSchedule(){
     return schedule;
   }

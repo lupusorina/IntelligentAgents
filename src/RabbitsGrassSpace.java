@@ -1,14 +1,14 @@
-// CarryDropSpace
+// RabbitsGrassSpace
 
 
 import uchicago.src.sim.space.Object2DGrid; 
 
 
-public class CarryDropSpace {
+public class RabbitsGrassSpace {
 private Object2DGrid moneySpace;
 private Object2DGrid agentSpace;
 
-  public CarryDropSpace(int xSize, int ySize){
+  public RabbitsGrassSpace(int xSize, int ySize){
     moneySpace = new Object2DGrid(xSize, ySize);
     agentSpace = new Object2DGrid(xSize, ySize);
 
@@ -45,6 +45,14 @@ private Object2DGrid agentSpace;
     return i;
   }
 
+  public RabbitsGrassAgent getAgentAt(int x, int y){
+    RabbitsGrassAgent retVal = null;
+    if(agentSpace.getObjectAt(x, y) != null){
+      retVal = (RabbitsGrassAgent)agentSpace.getObjectAt(x,y);
+    }
+    return retVal;
+  }
+
   public Object2DGrid getCurrentMoneySpace(){
     return moneySpace;
   }
@@ -59,7 +67,7 @@ private Object2DGrid agentSpace;
     return retVal;
   }
 
-  public boolean addAgent(CarryDropAgent agent){
+  public boolean addAgent(RabbitsGrassAgent agent){
     boolean retVal = false;
     int count = 0;
     int countLimit = 10 * agentSpace.getSizeX() * agentSpace.getSizeY();
@@ -70,11 +78,44 @@ private Object2DGrid agentSpace;
       if(isCellOccupied(x,y) == false){
         agentSpace.putObjectAt(x,y,agent);
         agent.setXY(x,y);
+        agent.setRabbitsGrassSpace(this);
         retVal = true;
       }
-      count++;     }
+      count++;
+    }
 
     return retVal;
   }
 
+  public void removeAgentAt(int x, int y){
+    agentSpace.putObjectAt(x, y, null);
+  }
+
+  public int takeMoneyAt(int x, int y){
+    int money = getMoneyAt(x, y);
+    moneySpace.putObjectAt(x, y, new Integer(0));
+    return money;
+  }
+
+  public boolean moveAgentAt(int x, int y, int newX, int newY){
+    boolean retVal = false;
+    if(!isCellOccupied(newX, newY)){
+      RabbitsGrassAgent cda = (RabbitsGrassAgent)agentSpace.getObjectAt(x, y);
+      removeAgentAt(x,y);
+      cda.setXY(newX, newY);
+      agentSpace.putObjectAt(newX, newY, cda);
+      retVal = true;
+    }
+    return retVal;
+  }
+
+  public int getTotalMoney(){
+    int totalMoney = 0;
+    for(int i = 0; i < agentSpace.getSizeX(); i++){
+      for(int j = 0; j < agentSpace.getSizeY(); j++){
+        totalMoney += getMoneyAt(i,j);
+      }
+    }
+    return totalMoney;
+  }
 }
